@@ -20,7 +20,7 @@ jobs:
           cml comment create report.md
 
           # Create pull request
-          cml pr model/random_forest.joblib
+          cml pr . # model/random_forest.joblib
 
           # Create CML report
           cat model/metrics.txt > report.md
