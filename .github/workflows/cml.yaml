@@ -16,7 +16,7 @@ jobs:
 
           # Create CML report
           cat model/metrics.txt >> report.md
-          echo '![](./plot.png "Confusion Matrix")' >> report.md
+          echo '![](./model/confusion_matrix.png "Confusion Matrix")' >> report.md
           cml comment create report.md
 
           # Create pull request
