@@ -1,0 +1,43 @@
+name: CML
+on: [push]
+jobs:
+  train-and-report:
+    runs-on: ubuntu-latest
+    container: docker://ghcr.io/iterative/cml:0-dvc2-base1
+    steps:
+      - uses: actions/checkout@v3
+      - name: Train model
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          pip install -r requirements.txt
+          python get_data.py
+          python train.py  # generate plot.png
+
+          # Create CML report
+          cat model/metrics.txt >> report.md
+          echo '![](./model/confusion_matrix.png "Confusion Matrix")' >> report.md
+          cml comment create report.md
+
+          # Create pull request
+          cml pr . # model/random_forest.joblib
+
+          # Create CML report
+          cat model/metrics.txt > report.md
+          cml publish model/confusion_matrix.png --md >> report.md
+          cml send-comment --pr --update report.md
+
+          # Connect to your DVC remote storage and push the model to there
+          dvc add model/random_forest.joblib # This automatically adds the model to your .gitignore
+          dvc remote add -d -f myremote s3://ml-dev-remote-storage-user/test
+          dvc push
+
+          # Create pull request for the remaining files
+          cml pr .
+
+          # Create CML report
+          cat model/metrics.txt > report.md
+          cml publish model/confusion_matrix.png --md >> report.md
+          cml send-comment --pr --update report.md
