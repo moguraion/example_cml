@@ -16,26 +16,13 @@ jobs:
           python get_data.py
           python train.py  # generate plot.png
 
-          # Create CML report
-          cat model/metrics.txt >> report.md
-          echo '![](./model/confusion_matrix.png "Confusion Matrix")' >> report.md
-          cml comment create report.md
-
-          # Create pull request
-          cml pr . # model/random_forest.joblib
-
-          # Create CML report
-          cat model/metrics.txt > report.md
-          cml publish model/confusion_matrix.png --md >> report.md
-          cml send-comment --pr --update report.md
-
           # Connect to your DVC remote storage and push the model to there
           dvc add model/random_forest.joblib # This automatically adds the model to your .gitignore
           dvc remote add -d -f myremote s3://ml-dev-remote-storage-user/test
           dvc push
 
           # Create pull request for the remaining files
-          cml pr .
+          cml pr . --branch ${{ github.ref_name }}-$GITHUB_SHA-${{ github.run_number }}
 
           # Create CML report
           cat model/metrics.txt > report.md
