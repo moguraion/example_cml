@@ -23,10 +23,8 @@ acc = clf.score(X_test, y_test)
 print(acc)
 
 # Create model folder if it does not yet exist
-print(os.path.exists('model'))
 if not os.path.exists('model'):
     os.makedirs('model')
-print(os.path.exists('model'))
 
 # Write metrics to file
 with open("model/metrics.txt", 'w+') as outfile:
